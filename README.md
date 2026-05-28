@@ -31,19 +31,19 @@ O projeto adotou princípios das metodologias ágeis (Extreme Programming e Scru
 ### 4. ENGENHARIA DE REQUISITOS
 
 **Requisitos Funcionais (RF):**
-* **RF01:** Cadastro e login de Clientes e Gestores.
-* **RF02:** Autenticação Multi-tenant protegida por Chave Admin.
-* **RF03:** Catálogo segmentado por restaurante.
-* **RF04:** Carrinho de Compras dinâmico.
-* **RF05:** Persistência de Checkout vinculando IDs de Cliente e Restaurante.
-* **RF06:** Adição de pratos e atualização de preços pelo Gestor.
-* **RF07:** Atualização de status da Fila da Cozinha.
+* **RF01:** O sistema deve permitir o cadastro e a autenticação com controle de acesso para dois perfis de atores: Clientes (consumidores) e Gestores (administradores de restaurantes).
+* **RF02:** O sistema deve garantir o isolamento *multi-tenant*, exibindo o catálogo de produtos filtrado dinamicamente e exclusivamente pelo ID do restaurante acessado.
+* **RF03:** O sistema deve prover um carrinho de compras que permita ao Cliente adicionar itens, alterar quantidades, visualizar o subtotal em tempo real e remover produtos.
+* **RF04:** O sistema deve registrar o *checkout* gerando uma entidade de Pedido que mantenha a integridade referencial (vínculo exato) entre o Cliente, os Itens escolhidos e o Restaurante.
+* **RF05:** O sistema deve disponibilizar um painel administrativo onde o Gestor possa realizar operações completas de CRUD (Criar, Ler, Atualizar, Deletar) sobre o cardápio do seu estabelecimento.
+* **RF06:** O sistema deve fornecer uma interface para que o Gestor atualize o status da fila de pedidos (ex: Recebido, Em Preparo, Finalizado) e o Cliente visualize essa mudança.
 
 **Requisitos Não Funcionais (RNF):**
-* **RNF01:** API em Python utilizando FastAPI.
-* **RNF02:** Persistência relacional em PostgreSQL com ORM (SQLAlchemy).
-* **RNF03:** Portabilidade via Docker Compose.
-* **RNF04:** Interface SPA com Vanilla JS e Tailwind CSS.
+* **RNF01 (Arquitetura e Portabilidade):** A aplicação deve ser conteinerizada e orquestrada utilizando Docker e Docker Compose, garantindo isolamento de ambiente e facilidade de *deploy*.
+* **RNF02 (Desempenho e Back-end):** A API RESTful deve ser construída de forma assíncrona utilizando a linguagem Python e o *framework* FastAPI, assegurando alta performance e documentação automática (Swagger/OpenAPI).
+* **RNF03 (Persistência e Integridade):** O armazenamento deve utilizar um SGBD Relacional (PostgreSQL), com transações e integridade mapeadas através do ORM SQLAlchemy.
+* **RNF04 (Interface e Usabilidade):** O *front-end* deve adotar o padrão SPA (*Single Page Application*), construído com Vanilla JavaScript e estilizado com Tailwind CSS para garantir responsividade em dispositivos móveis.
+* **RNF05 (Segurança):** A API deve implementar validações estritas de dados na entrada (via Pydantic) e políticas de CORS configuradas para aceitar apenas requisições da origem oficial do domínio.
 
 ---
 
