@@ -96,7 +96,7 @@ Certifique-se de ter o Docker e o Docker Compose instalados.
 1. Clone o repositório:
 
 ```bash
-git clone [https://github.com/imthedavi/ifrangrofr.git](https://github.com/imthedavi/ifrangrofr.git)
+git clone [https://github.com/imthedavi/iFrango.git](https://github.com/imthedavi/iFrango.git)
 cd ifrangrofr
 
 ```
