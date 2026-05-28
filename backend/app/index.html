@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFrango - Premium Delivery</title>
+    <style>
+        :root {
+            --bg-body: #fefaf6; --bg-card: #ffffff; --text-primary: #242424; --text-secondary: #605e5c;
+            --brand-color: #F7931E; --brand-hover: #d37206; --border-color: #ebe0d5;
+            --success-bg: #dff6dd; --success-text: #107c10; --danger-bg: #fde7e9; --danger-text: #a80000;
+            --shadow-sm: 0 2px 4px rgba(247, 147, 30, 0.08); --shadow-md: 0 8px 16px rgba(247, 147, 30, 0.15);
+            --radius-sm: 6px; --radius-md: 12px; --radius-lg: 16px;
+        }
+        body.dark-mode {
+            --bg-body: #1a1510; --bg-card: #29221c; --text-primary: #fcefe3; --text-secondary: #c4b5a5;
+            --brand-color: #ffad4d; --brand-hover: #ffca8a; --border-color: #453a32;
+        }
+        body { background-color: var(--bg-body); font-family: 'Segoe UI', sans-serif; color: var(--text-primary); padding-top: 80px; transition: background-color 0.3s, color 0.3s; margin: 0; padding-bottom: 40px; }
+        
+        .navbar { background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); height: 70px; box-shadow: var(--shadow-sm); position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
+        .navbar-brand { font-weight: 800; font-size: 1.35rem; color: var(--text-primary); text-decoration: none; }
+        
+        .restaurant-scroll-bar { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; margin-bottom: 25px; }
+        .restaurant-chip { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 50px; padding: 8px 20px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .restaurant-chip.active { border-color: var(--brand-color); background-color: var(--brand-color); color: white; }
+
+        .btn-msn { background-color: var(--brand-color); color: white; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-msn:hover { background-color: var(--brand-hover); transform: scale(1.02); }
+        .btn-logout { background-color: transparent; border: 1px solid var(--danger-text); color: var(--danger-text); padding: 6px 16px; border-radius: 50px; font-weight: bold; cursor: pointer; display: none; }
+        
+        .form-control { background-color: var(--bg-body); border: 2px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); padding: 12px; width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        .form-control:focus { border-color: var(--brand-color); outline: none; }
+        .form-label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;}
+
+        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); }
+        .auth-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: var(--text-secondary); }
+        .auth-tab.active { color: var(--brand-color); border-bottom: 3px solid var(--brand-color); margin-bottom: -2px; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .app-layout { display: flex; gap: 24px; flex-wrap: wrap; }
+        .news-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+        .masonry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { padding: 14px; text-transform: uppercase; color: var(--text-secondary); text-align: left; border-bottom: 2px solid var(--border-color); font-size: 0.8rem;}
+        .admin-table td { padding: 14px; border-bottom: 1px solid var(--border-color); }
+        .badge-status { background-color: var(--success-bg); color: var(--success-text); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;}
+
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--bg-card); color: var(--text-primary); border-left: 4px solid var(--brand-color); padding: 15px 20px; border-radius: 8px; box-shadow: var(--shadow-md); transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 600; display: flex; align-items: center; gap: 10px;}
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-left-color: var(--danger-text); }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-box { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); text-align: center; }
+    </style>
+</head>
+<body class="dark-mode">
+
+<nav class="navbar">
+    <a href="#" class="navbar-brand">🍗 iFrango</a>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <span id="header-user" style="font-weight: bold; color: var(--text-secondary);"></span>
+        <button class="btn-logout" id="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+        <button class="btn-theme" onclick="document.body.classList.toggle('dark-mode')" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer;">🌓</button>
+    </div>
+</nav>
+
+<div class="toast-container" id="toast-container"></div>
+
+<div class="container" id="tela-auth" style="display: none; justify-content: center; align-items: center; min-height: 75vh;">
+    <div class="news-card" style="width: 100%; max-width: 420px; padding: 24px;">
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchTab('login')">Cliente</div>
+            <div class="auth-tab" onclick="switchTab('cadastro')">Novo</div>
+            <div class="auth-tab" onclick="switchTab('restaurante')">Gestor</div>
+        </div>
+
+        <div id="form-login" class="auth-form active">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="login-email" placeholder="cliente@email.com">
+            <label class="form-label">Senha</label>
+            <input type="password" class="form-control" id="login-senha-cliente" placeholder="••••••••">
+            <button class="btn-msn" style="width: 100%; margin-top: 10px;" onclick="loginCliente()">Acessar Cardápio</button>
+        </div>
+
+        <div id="form-cadastro" class="auth-form">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="cad-nome" placeholder="Ex: Robert Silva">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="cad-email" placeholder="cliente@email.com">
+            <label class="form-label">Criar Senha</label>
+            <input type="password" class="form-control" id="cad-senha-cliente" placeholder="••••••••">
+            <button class="btn-msn" style="width: 100%; margin-top: 10px;" onclick="cadastrarCliente()">Registrar</button>
+        </div>
+
+        <div id="form-restaurante" class="auth-form">
+            <label class="form-label">Estabelecimento</label>
+            <select class="form-control" id="restaurante-selecionado"></select>
+            <label class="form-label">Chave Admin</label>
+            <input type="password" class="form-control" id="restaurante-token">
+            <button class="btn-msn" style="width: 100%;" onclick="loginRestaurante()">Acessar Painel</button>
+            <hr style="border:1px solid var(--border-color); margin: 20px 0;">
+            <label class="form-label" style="color:var(--brand-color)">Nova Franquia (Nome e Chave)</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" class="form-control" id="novo-rest-nome" placeholder="Nome" style="margin:0;">
+                <input type="password" class="form-control" id="novo-rest-chave" placeholder="Chave" style="margin:0;">
+            </div>
+            <button class="btn-msn" style="width: 100%; margin-top:10px; background:transparent; border:2px solid var(--brand-color); color:var(--brand-color);" onclick="cadastrarRestaurante()">Adicionar ao Hub</button>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="conteudo-cliente" style="display: none;">
+    <div class="restaurant-scroll-bar" id="barra-restaurantes"></div>
+    <div class="app-layout">
+        <div style="flex: 2; min-width: 60%;">
+            <div class="masonry-grid" id="vitrine"></div>
+            
+            <div class="news-card" style="margin-top: 40px; padding: 24px;">
+                <h3 style="margin-top:0;">Meus Pedidos Recentes</h3>
+                <table class="admin-table">
+                    <thead><tr><th>ID</th><th>Data</th><th>Status</th><th>Total</th></tr></thead>
+                    <tbody id="tabela-pedidos-cliente"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px; position: sticky; top: 100px;">
+            <div class="news-card" style="padding: 24px;">
+                <h3 style="margin-top: 0; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">Carrinho</h3>
+                <div id="itens-carrinho" style="min-height: 80px; margin-top: 15px;"></div>
+                <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:bold; color:var(--brand-color); border-top: 2px solid var(--border-color); margin-top: 15px; padding-top: 15px;">
+                    <span>Total</span><span id="total-carrinho">R$ 0.00</span>
+                </div>
+                <button class="btn-msn" style="width: 100%; margin-top: 20px;" onclick="finalizarPedido()">Pagar e Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="conteudo-restaurante" style="display: none;">
+    <div class="app-layout">
+        <div class="news-card" style="flex: 2; padding: 24px;">
+            <h2 style="color: var(--brand-color); margin-top:0;">Gestão do Cardápio</h2>
+            
+            <div style="margin-bottom: 25px; padding: 15px; border: 1px dashed var(--border-color); border-radius: 8px; background-color: var(--bg-body);">
+                <h4 style="margin-top: 0; color: var(--brand-color);">➕ Adicionar Novo Prato</h4>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" class="form-control" id="novo-prato-nome" placeholder="Nome do prato" style="margin:0; flex: 2; min-width: 150px;">
+                    <input type="text" class="form-control" id="novo-prato-desc" placeholder="Descrição rápida" style="margin:0; flex: 3; min-width: 200px;">
+                    <input type="number" step="0.01" class="form-control" id="novo-prato-preco" placeholder="Preço (R$)" style="margin:0; flex: 1; min-width: 100px;">
+                    <button class="btn-msn" onclick="adicionarProdutoGestor()">Salvar</button>
+                </div>
+            </div>
+
+            <table class="admin-table">
+                <thead><tr><th>Prato</th><th>Preço</th><th>Ação</th></tr></thead>
+                <tbody id="tabela-gestor-produtos"></tbody>
+            </table>
+        </div>
+        
+        <div class="news-card" style="flex: 1; padding: 24px; position: sticky; top: 100px;">
+            <h2 style="color: var(--brand-color); margin-top:0;">Fila da Cozinha</h2>
+            <div id="fila-pedidos-restaurante" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-sucesso">
+    <div class="modal-box">
+        <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+        <h3 id="modal-titulo" style="color:var(--brand-color); margin:0 0 10px 0;">Pedido Confirmado!</h3>
+        <p id="modal-mensagem" style="color: var(--text-secondary);"></p>
+        <button class="btn-msn" style="width: 100%;" onclick="document.getElementById('modal-sucesso').style.display='none'">Continuar</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8000';
+    let sessao = { tipo: null, id: null, nome: null };
+    let restauranteFiltro = null;
+    let carrinho = [];
+
+    // --- CARREGAMENTO INICIAL E SESSÃO ---
+    window.addEventListener('DOMContentLoaded', () => {
+        const cache = localStorage.getItem('ifrango_sessao');
+        if (cache) {
+            const parsed = JSON.parse(cache);
+            iniciarSessao(parsed.tipo, parsed.id, parsed.nome);
+        } else {
+            document.getElementById('tela-auth').style.display = 'flex';
+        }
+    });
+
+    function iniciarSessao(tipo, id, nome) {
+        sessao = { tipo, id, nome };
+        localStorage.setItem('ifrango_sessao', JSON.stringify(sessao)); 
+        document.getElementById('tela-auth').style.display = 'none';
+        document.getElementById('btn-logout').style.display = 'block';
+        document.getElementById('header-user').innerText = `👤 ${nome}`;
+        
+        if (tipo === 'cliente') {
+            document.getElementById('conteudo-cliente').style.display = 'block';
+            carregarRestaurantesChips();
+        } else {
+            document.getElementById('conteudo-restaurante').style.display = 'block';
+            carregarPainelRestaurante();
+        }
+    }
+
+    function fazerLogout() {
+        sessao = { tipo: null, id: null, nome: null };
+        localStorage.removeItem('ifrango_sessao');
+        carrinho = []; restauranteFiltro = null;
+        document.getElementById('conteudo-cliente').style.display = 'none';
+        document.getElementById('conteudo-restaurante').style.display = 'none';
+        document.getElementById('btn-logout').style.display = 'none';
+        document.getElementById('header-user').innerText = '';
+        document.getElementById('tela-auth').style.display = 'flex';
+        switchTab('login');
+    }
+
+    // --- UX: TOAST NOTIFICATIONS ---
+    function showToast(mensagem, isError = false) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.innerHTML = `<span>${isError ? '⚠️' : '🍗'}</span> ${mensagem}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.auth-tab, .auth-form').forEach(el => el.classList.remove('active'));
+        const index = tab === 'login' ? 0 : tab === 'cadastro' ? 1 : 2;
+        document.querySelectorAll('.auth-tab')[index].classList.add('active');
+        document.querySelectorAll('.auth-form')[index].classList.add('active');
+        if (tab === 'restaurante') carregarRestaurantesDropdown();
+    }
+
+    // --- LÓGICA DE API ---
+    async function request(endpoint, method = 'GET', body = null) {
+        const config = { method, headers: { 'Content-Type': 'application/json' } };
+        if (body) config.body = JSON.stringify(body);
+        const res = await fetch(`${API_URL}${endpoint}`, config);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Erro na requisição');
+        return data;
+    }
+
+    // --- AUTHENTICAÇÃO ---
+    async function loginCliente() {
+        try {
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha-cliente').value.trim();
+            if(!email || !senha) throw new Error("Preencha email e senha!");
+            const user = await request('/usuarios/login', 'POST', { identificador: email, senha: senha });
+            iniciarSessao('cliente', user.id, user.nome);
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    async function cadastrarCliente() {
+        try {
+            const nome = document.getElementById('cad-nome').value.trim();
+            const email = document.getElementById('cad-email').value.trim();
+            const senha = document.getElementById('cad-senha-cliente').value.trim();
+            if(!nome || !email || !senha) throw new Error("Preencha todos os campos!");
+            const user = await request('/usuarios', 'POST', { nome, email, senha });
+            iniciarSessao('cliente', user.id, user.nome);
+            showToast('Bem-vindo ao iFrango!');
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    async function loginRestaurante() {
+        try {
+            const nome = document.getElementById('restaurante-selecionado').value;
+            const senha = document.getElementById('restaurante-token').value;
+            const rest = await request('/restaurantes/login', 'POST', { identificador: nome, senha });
+            iniciarSessao('restaurante', rest.id, rest.nome);
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    async function cadastrarRestaurante() {
+        try {
+            const nome = document.getElementById('novo-rest-nome').value;
+            const chave_admin = document.getElementById('novo-rest-chave').value;
+            await request('/restaurantes', 'POST', { nome, chave_admin });
+            showToast('Restaurante cadastrado com sucesso!');
+            carregarRestaurantesDropdown();
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    // --- MÓDULO CLIENTE ---
+    async function carregarRestaurantesChips() {
+        const rests = await request('/restaurantes');
+        const barra = document.getElementById('barra-restaurantes');
+        if(!restauranteFiltro && rests.length > 0) selecionarRestaurante(rests[0].id, rests[0].nome);
+        barra.innerHTML = rests.map(r => `<div class="restaurant-chip ${r.id === restauranteFiltro ? 'active' : ''}" onclick="selecionarRestaurante(${r.id}, '${r.nome}', this)">🔥 ${r.nome}</div>`).join('');
+    }
+
+    function selecionarRestaurante(id, nome, elemento = null) {
+        if (carrinho.length > 0 && restauranteFiltro !== id) {
+            if(!confirm("Mudar de restaurante esvaziará seu carrinho. Continuar?")) return;
+            carrinho = []; atualizarCarrinho();
+        }
+        restauranteFiltro = id;
+        if(elemento) {
+            document.querySelectorAll('.restaurant-chip').forEach(c => c.classList.remove('active'));
+            elemento.classList.add('active');
+        }
+        carregarCatalogo();
+        carregarHistoricoCliente();
+    }
+
+    async function carregarCatalogo() {
+        const prods = await request(`/produtos/restaurante/${restauranteFiltro}`);
+        document.getElementById('vitrine').innerHTML = prods.map(p => `
+            <div class="news-card" style="padding: 20px; display:flex; flex-direction:column;">
+                <h3 style="margin-top:0;">${p.nome}</h3>
+                <p style="color:var(--text-secondary); flex:1;">${p.descricao}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                    <span style="font-weight:bold; color:var(--brand-color); font-size:1.2rem;">R$ ${p.preco.toFixed(2)}</span>
+                    <button class="btn-msn" onclick="addCarrinho(${p.id}, '${p.nome}', ${p.preco})">Add</button>
+                </div>
+            </div>`).join('');
+    }
+
+    function addCarrinho(id, nome, preco) {
+        const item = carrinho.find(i => i.id === id);
+        if (item) item.qtd++; else carrinho.push({ id, nome, preco, qtd: 1 });
+        atualizarCarrinho();
+        showToast(`${nome} adicionado!`);
+    }
+
+    function atualizarCarrinho() {
+        const div = document.getElementById('itens-carrinho');
+        if (carrinho.length === 0) {
+            div.innerHTML = '<p style="color:var(--text-secondary); font-style:italic;">Vazio</p>';
+            document.getElementById('total-carrinho').innerText = 'R$ 0.00'; return;
+        }
+        let total = 0;
+        div.innerHTML = carrinho.map(i => { total += i.preco * i.qtd; return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;"><span><b style="color:var(--brand-color)">${i.qtd}x</b> ${i.nome}</span><span>R$ ${(i.preco * i.qtd).toFixed(2)}</span></div>`; }).join('');
+        document.getElementById('total-carrinho').innerText = `R$ ${total.toFixed(2)}`;
+    }
+
+    async function finalizarPedido() {
+        if(carrinho.length === 0) return showToast('Carrinho vazio!', true);
+        try {
+            const itens = carrinho.map(i => ({ produto_id: i.id, quantidade: i.qtd }));
+            const ped = await request('/pedidos', 'POST', { usuario_id: sessao.id, restaurante_id: restauranteFiltro, itens });
+            document.getElementById('modal-mensagem').innerHTML = `Sua ordem <b>#00${ped.id}</b> foi enviada para a cozinha.`;
+            document.getElementById('modal-sucesso').style.display = 'flex';
+            carrinho = []; atualizarCarrinho(); carregarHistoricoCliente();
+        } catch (e) { showToast('Erro ao processar', true); }
+    }
+
+    async function carregarHistoricoCliente() {
+        const peds = await request(`/pedidos/usuario/${sessao.id}`);
+        document.getElementById('tabela-pedidos-cliente').innerHTML = peds.length === 0 ? `<tr><td colspan="4">Nenhum pedido realizado.</td></tr>` : peds.map(p => `
+            <tr>
+                <td>#00${p.id}</td>
+                <td>${new Date(p.data_pedido).toLocaleDateString()}</td>
+                <td><span class="badge-status">${p.status}</span></td>
+                <td style="font-weight:bold;">R$ ${p.total.toFixed(2)}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding: 5px 14px 15px 14px; border-bottom: 2px solid var(--border-color);">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <b>Itens:</b> ${p.itens.map(i => `${i.quantidade}x ${i.produto ? i.produto.nome : 'Produto Oculto'}`).join(', ')}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // --- MÓDULO RESTAURANTE ---
+    async function carregarRestaurantesDropdown() {
+        const rests = await request('/restaurantes');
+        document.getElementById('restaurante-selecionado').innerHTML = rests.map(r => `<option value="${r.nome}">${r.nome}</option>`).join('');
+    }
+
+    async function carregarPainelRestaurante() {
+        const prods = await request(`/produtos/restaurante/${sessao.id}`);
+        document.getElementById('tabela-gestor-produtos').innerHTML = prods.map(p => `
+            <tr>
+                <td><input type="text" class="form-control" id="edit-n-${p.id}" value="${p.nome}" style="margin:0; font-weight:bold;"></td>
+                <td style="width:120px;"><input type="number" step="0.01" class="form-control" id="edit-p-${p.id}" value="${p.preco.toFixed(2)}" style="margin:0; color:var(--brand-color); font-weight:bold;"></td>
+                <td><button class="btn-msn" style="padding: 8px 12px; font-size:0.8rem;" onclick="salvarProduto(${p.id}, '${p.descricao}')">Atualizar</button></td>
+            </tr>`).join('');
+        
+        const peds = await request(`/pedidos/restaurante/${sessao.id}`);
+        document.getElementById('fila-pedidos-restaurante').innerHTML = peds.length === 0 ? `<p>Cozinha livre no momento.</p>` : peds.map(p => {
+            let proxStatus = p.status === 'Preparando' ? 'Saiu para Entrega' : (p.status === 'Saiu para Entrega' ? 'Concluído' : '');
+            let btnStatus = proxStatus ? `<button class="btn-msn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="avancarStatusPedido(${p.id}, '${proxStatus}')">${proxStatus} ➡️</button>` : `<span style="color:var(--success-text); font-weight:bold;">Finalizado ✔️</span>`;
+
+            return `
+            <div style="border:1px solid var(--border-color); padding:15px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
+                    <b>Pedido #00${p.id}</b><span class="badge-status">${p.status}</span>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px;">
+                    ${p.itens.map(i => `<div><b style="color:var(--text-primary)">${i.quantidade}x</b> ${i.produto ? i.produto.nome : 'Produto Oculto'}</div>`).join('')}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size:1.3rem; font-weight:bold; color:var(--brand-color);">R$ ${p.total.toFixed(2)}</div>
+                    ${btnStatus}
+                </div>
+            </div>`
+        }).join('');
+    }
+
+    async function adicionarProdutoGestor() {
+        const nome = document.getElementById('novo-prato-nome').value.trim();
+        const descricao = document.getElementById('novo-prato-desc').value.trim();
+        const preco = parseFloat(document.getElementById('novo-prato-preco').value);
+
+        if(!nome || !preco) return showToast('Nome e preço são obrigatórios!', true);
+
+        try {
+            await request('/produtos', 'POST', { nome, descricao, preco, restaurante_id: sessao.id });
+            showToast('Novo prato adicionado ao cardápio!');
+            document.getElementById('novo-prato-nome').value = '';
+            document.getElementById('novo-prato-desc').value = '';
+            document.getElementById('novo-prato-preco').value = '';
+            carregarPainelRestaurante(); 
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    async function salvarProduto(id, descricao) {
+        const nome = document.getElementById(`edit-n-${id}`).value;
+        const preco = parseFloat(document.getElementById(`edit-p-${id}`).value);
+        try {
+            await request(`/produtos/${id}`, 'PUT', { nome, descricao, preco, restaurante_id: sessao.id });
+            showToast('Cardápio atualizado no Banco!');
+        } catch (e) { showToast(e.message, true); }
+    }
+
+    async function avancarStatusPedido(id, novoStatus) {
+        try {
+            await request(`/pedidos/${id}/status`, 'PUT', { status: novoStatus });
+            showToast(`Status atualizado para: ${novoStatus}`);
+            carregarPainelRestaurante(); 
+        } catch (e) { showToast(e.message, true); }
+    }
+</script>
+</body>
+</html>

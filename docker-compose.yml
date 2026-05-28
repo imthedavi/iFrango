@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ifrango_db
+    restart: always
+    environment:
+      POSTGRES_USER: ifrango_user
+      POSTGRES_PASSWORD: ifrango_password
+      POSTGRES_DB: ifrango_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: ./backend
+    container_name: ifrango_backend
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/code
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://ifrango_user:ifrango_password@db:5432/ifrango_db
+
+volumes:
+  postgres_data:
