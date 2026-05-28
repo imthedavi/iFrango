@@ -1,0 +1,426 @@
+<!-- Chosen Palette: Warm Neutrals with Orange Accents. Backgrounds: #fefaf6 (Off-white/Cream), #ffffff (White). Text: #242424 (Dark Charcoal), #605e5c (Muted Gray). Accents: #F7931E (Brand Orange). -->
+<!-- Application Structure Plan: A full-screen interactive slide presentation. Transformed the previous dashboard tabs into sequential slides (sections with 100vh). Implemented keyboard navigation (arrow keys) and UI controls to mimic PowerPoint/Keynote, allowing the student to present directly from the browser without switching contexts. -->
+<!-- Visualization & Content Choices: 
+1. Slide Structure: Absolute positioning with opacity transitions for smooth "slide" changes.
+2. Chart Initialization: Modified Chart.js initialization to trigger only when the specific slide is visible to prevent canvas rendering bugs common in hidden divs.
+3. Interaction: Keyboard event listeners added for seamless presenter control. 
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFrango Premium - Apresentação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fefaf6;
+            color: #242424;
+            overflow: hidden; /* Impede scroll, é um slide */
+        }
+        
+        #presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: scale(0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1100px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        /* Ocultar barra de rolagem mas manter funcional */
+        .slide-content::-webkit-scrollbar { width: 6px; }
+        .slide-content::-webkit-scrollbar-track { background: transparent; }
+        .slide-content::-webkit-scrollbar-thumb { background: #ebe0d5; border-radius: 10px; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            height: 300px;
+        }
+
+        /* Controles de Navegação */
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #ebe0d5;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #F7931E;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .control-btn:hover:not(:disabled) { transform: scale(1.2); }
+        .control-btn:disabled { color: #d1d5db; cursor: not-allowed; }
+
+        .dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            transition: background 0.3s;
+        }
+        .dot.active { background: #F7931E; }
+
+        /* Elementos interativos */
+        .tech-card { transition: all 0.3s ease; }
+        .tech-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(247, 147, 30, 0.2); border-color: #F7931E; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { colors: { brand: { DEFAULT: '#F7931E', dark: '#d37206', light: '#fcefe3' }, neutral: { text: '#242424', muted: '#605e5c', bg: '#fefaf6', card: '#ffffff' } } }
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="presentation-container">
+        
+        <!-- SLIDE 1: Capa -->
+        <div class="slide active" id="slide-0">
+            <div class="slide-content text-center">
+                <span class="text-6xl block mb-6">🐔</span>
+                <h1 class="text-6xl font-extrabold text-neutral-text mb-4">iFrango <span class="text-brand">Premium</span></h1>
+                <p class="text-2xl text-neutral-muted mb-8">Módulo Multi-tenant de Compras e Gestão de Delivery</p>
+                <div class="inline-block bg-white px-8 py-4 rounded-xl shadow-sm border border-orange-100">
+                    <p class="font-bold text-lg">Defesa de Projeto - Engenharia de Software</p>
+                    <p class="text-neutral-muted">Arquitetura, Desenvolvimento e Refatoração</p>
+                </div>
+                <p class="mt-12 text-sm text-neutral-muted animate-pulse">Use as setas do teclado ( ⬅ ➡ ) para navegar</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Visão Geral -->
+        <div class="slide" id="slide-1">
+            <div class="slide-content">
+                <h2 class="text-4xl font-extrabold text-neutral-text mb-8 text-center">O Desafio e a Proposta</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl bg-brand-light p-3 rounded-lg text-brand">🎯</span>
+                            <h3 class="text-2xl font-bold">O Problema</h3>
+                        </div>
+                        <p class="text-neutral-muted text-lg">
+                            Sistemas de delivery comuns operam para um único lojista (Single-tenant). O desafio foi projetar uma arquitetura onde <strong>múltiplos restaurantes</strong> coexistissem na mesma base de dados, sem vazamento de informações.
+                        </p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl bg-brand-light p-3 rounded-lg text-brand">🔄</span>
+                            <h3 class="text-2xl font-bold">A Solução (MVP)</h3>
+                        </div>
+                        <p class="text-neutral-muted text-lg">
+                            Um módulo web responsivo integrado a um banco de dados relacional. Permite a gestão descentralizada do cardápio pelos fornecedores e um fluxo de checkout assíncrono para os clientes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Arquitetura -->
+        <div class="slide" id="slide-2">
+            <div class="slide-content">
+                <h2 class="text-4xl font-extrabold text-neutral-text mb-8 text-center">Stack Tecnológica</h2>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="tech-card bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <span class="text-5xl block mb-4">🐳</span>
+                        <h3 class="text-xl font-bold mb-2">Docker</h3>
+                        <p class="text-neutral-muted text-sm">Orquestração e isolamento de contêineres para garantir portabilidade entre desenvolvimento e produção.</p>
+                    </div>
+                    <div class="tech-card bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <span class="text-5xl block mb-4">⚡</span>
+                        <h3 class="text-xl font-bold mb-2">FastAPI (Python)</h3>
+                        <p class="text-neutral-muted text-sm">Back-end de alta performance com tipagem estrita, documentação automática e rotas RESTful blindadas.</p>
+                    </div>
+                    <div class="tech-card bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <span class="text-5xl block mb-4">🐘</span>
+                        <h3 class="text-xl font-bold mb-2">PostgreSQL</h3>
+                        <p class="text-neutral-muted text-sm">Persistência relacional sólida. Integridade garantida via ORM SQLAlchemy (Chaves Estrangeiras estritas).</p>
+                    </div>
+                    <div class="tech-card bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <span class="text-5xl block mb-4">🎨</span>
+                        <h3 class="text-xl font-bold mb-2">Vanilla JS / Tailwind</h3>
+                        <p class="text-neutral-muted text-sm">Single Page Application (SPA) assíncrona, focada em UX rápida sem recarregamento de página.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Diagramas (Engenharia) -->
+        <div class="slide" id="slide-3">
+            <div class="slide-content">
+                <h2 class="text-4xl font-extrabold text-neutral-text mb-6 text-center">Fluxo de Dados (DFD - Nível 0)</h2>
+                
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-8 flex justify-center items-center">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+                        
+                        <div class="border-2 border-gray-300 rounded-lg p-6 text-center w-64 bg-gray-50">
+                            <span class="text-4xl block mb-2">👤</span>
+                            <h4 class="font-bold">Cliente</h4>
+                        </div>
+
+                        <div class="flex-grow flex flex-col items-center px-4 text-center">
+                            <div class="text-xs font-bold text-brand mb-1">Pedidos, Login ➔</div>
+                            <div class="w-full h-1 bg-brand rounded relative"><div class="absolute right-0 top-0 w-2 h-4 bg-brand transform -translate-y-1.5 rotate-45"></div></div>
+                            <div class="text-xs font-bold text-neutral-muted mt-1">⬅ Catálogo, Status</div>
+                        </div>
+
+                        <div class="border-4 border-brand bg-brand-light rounded-full p-8 text-center font-bold text-lg shadow-md w-64 z-10">
+                            iFrango Premium<br><span class="text-xs font-normal">(Sistema Central)</span>
+                        </div>
+
+                        <div class="flex-grow flex flex-col items-center px-4 text-center">
+                            <div class="text-xs font-bold text-neutral-muted mb-1">Fila, Menu Atual ➔</div>
+                            <div class="w-full h-1 bg-gray-400 rounded relative"><div class="absolute right-0 top-0 w-2 h-4 bg-gray-400 transform -translate-y-1.5 rotate-45"></div></div>
+                            <div class="text-xs font-bold text-brand mt-1">⬅ Novos Pratos, Chave</div>
+                        </div>
+
+                        <div class="border-2 border-gray-300 rounded-lg p-6 text-center w-64 bg-gray-50">
+                            <span class="text-4xl block mb-2">🏪</span>
+                            <h4 class="font-bold">Gestor</h4>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Refatoração -->
+        <div class="slide" id="slide-4">
+            <div class="slide-content">
+                <h2 class="text-4xl font-extrabold text-neutral-text mb-8 text-center">Refatoração e Code Smells</h2>
+                <div class="bg-brand-dark text-white rounded-xl p-10 shadow-lg">
+                    <p class="text-xl mb-8 leading-relaxed">
+                        Durante o ciclo de desenvolvimento iterativo (XP/Scrum), identificámos e corrigimos gargalos críticos:
+                    </p>
+                    <ul class="space-y-6 text-lg">
+                        <li class="flex items-start gap-4">
+                            <span class="text-3xl">🛡️</span>
+                            <div>
+                                <strong class="text-brand-light block">Segurança de Autenticação</strong>
+                                Mapeamento inicial usava GET na URL para login. Refatorado para <code class="bg-black bg-opacity-30 px-2 rounded">POST /usuarios/login</code> garantindo payload seguro.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="text-3xl">🔑</span>
+                            <div>
+                                <strong class="text-brand-light block">Integridade Referencial (MER)</strong>
+                                A tabela <code class="bg-black bg-opacity-30 px-2 rounded">pedidos</code> foi refatorada para exigir <code class="text-brand-light">usuario_id</code> e <code class="text-brand-light">restaurante_id</code>, resolvendo o problema de dados misturados.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <span class="text-3xl">*</span>
+                            <div>
+                                <strong class="text-brand-light block">Polimento de UX</strong>
+                                Substituição de <code class="bg-black bg-opacity-30 px-2 rounded">alert()</code> nativos por notificações Toast assíncronas e persistência de sessão via LocalStorage.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Métricas Analíticas -->
+        <div class="slide" id="slide-5">
+            <div class="slide-content">
+                <h2 class="text-4xl font-extrabold text-neutral-text mb-8 text-center">Potencial Analítico (Simulação)</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-center mb-4">Adoção da Plataforma (Pedidos/Dia)</h3>
+                        <div class="chart-container">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-center mb-4">Market Share (Receita por Franquia)</h3>
+                        <div class="chart-container">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Final -->
+        <div class="slide" id="slide-6">
+            <div class="slide-content text-center">
+                <span class="text-6xl block mb-6"></span>
+                <h2 class="text-5xl font-extrabold text-neutral-text mb-6">Demonstração ao Vivo</h2>
+                <p class="text-2xl text-neutral-muted mb-12">Vamos testar o MVP em ambiente de execução.</p>
+                
+                <div class="inline-flex gap-4">
+                    <a href="http://ifrango.frangro.com.br" target="_blank" class="bg-brand text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-brand-dark transition-colors shadow-lg">
+                        Acessar Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controles fixos -->
+    <div class="controls">
+        <button class="control-btn" id="btn-prev" onclick="pres.prev()" disabled>◀</button>
+        <div class="dots" id="slide-dots">
+            <!-- Pontinhos gerados via JS -->
+        </div>
+        <button class="control-btn" id="btn-next" onclick="pres.next()">▶</button>
+    </div>
+
+    <script>
+        const pres = {
+            currentSlide: 0,
+            totalSlides: 7,
+            chartsRendered: false,
+
+            init: function() {
+                // Gerar pontinhos
+                const dotsContainer = document.getElementById('slide-dots');
+                for(let i=0; i<this.totalSlides; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = `dot ${i === 0 ? 'active' : ''}`;
+                    dotsContainer.appendChild(dot);
+                }
+
+                // Escutar teclado
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'Space') this.next();
+                    if (e.key === 'ArrowLeft') this.prev();
+                });
+            },
+
+            updateUI: function() {
+                // Atualizar classes dos slides
+                document.querySelectorAll('.slide').forEach((slide, index) => {
+                    if(index === this.currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                // Atualizar pontinhos
+                document.querySelectorAll('.dot').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+
+                // Atualizar botões
+                document.getElementById('btn-prev').disabled = this.currentSlide === 0;
+                document.getElementById('btn-next').disabled = this.currentSlide === this.totalSlides - 1;
+
+                // Renderizar gráficos apenas quando chegar no slide 5 (índice 5) para evitar bugs de canvas escondido
+                if(this.currentSlide === 5 && !this.chartsRendered) {
+                    this.renderCharts();
+                    this.chartsRendered = true;
+                }
+            },
+
+            next: function() {
+                if (this.currentSlide < this.totalSlides - 1) {
+                    this.currentSlide++;
+                    this.updateUI();
+                }
+            },
+
+            prev: function() {
+                if (this.currentSlide > 0) {
+                    this.currentSlide--;
+                    this.updateUI();
+                }
+            },
+
+            renderCharts: function() {
+                const ctxBar = document.getElementById('barChart').getContext('2d');
+                new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                        datasets: [{
+                            label: 'Volume de Pedidos (Simulado)',
+                            data: [45, 52, 38, 65, 98, 120, 115],
+                            backgroundColor: '#F7931E',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+
+                const ctxPie = document.getElementById('doughnutChart').getContext('2d');
+                new Chart(ctxPie, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['FrangoAlert HQ', 'Hot Chicken Co.', 'Rei do Assado', 'Outros'],
+                        datasets: [{
+                            data: [42, 28, 20, 10],
+                            backgroundColor: ['#F7931E', '#242424', '#605e5c', '#ebe0d5'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+                });
+            }
+        };
+
+        // Inicializar apresentação
+        pres.init();
+    </script>
+</body>
+</html>
