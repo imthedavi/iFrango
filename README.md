@@ -1,20 +1,21 @@
-# 🐔  iFrango Premium - Delivery Multi-tenant
+
+```markdown
+# 🍗 iFrango Premium - Delivery Multi-tenant
 
 **Link da Aplicação em Produção (Protótipo):** [http://ifrango.frangro.com.br](http://ifrango.frangro.com.br)  
-**Apresentação do Seminário :** Abra o arquivo `Apresentacao_iFrango.html` contido neste repositório no navegador.
+**Apresentação do Seminário (Slide Interativo):** Abra o arquivo `Apresentacao_iFrango.html` contido neste repositório no seu navegador.
 
 ---
 
 ## 👥 Componentes do Grupo
-* **Davi OLiveira** - Engenharia de Software / Fullstack
-
+* **Davi Oliveira** - Engenharia de Software / Fullstack
 
 ---
 
 ## 📄 Documento do Projeto (Padrão ABNT)
 
 ### 1. INTRODUÇÃO
-O presente documento detalha a engenharia e o desenvolvimento do projeto **iFrango Premium**, um módulo de software voltado para o setor de *food service* e *delivery*. O projeto foi concebido como um Produto Mínimo Viável (MVP) para validar as regras de negócio essenciais de compra, venda e gestão de cardápio em um ambiente *multi-tenant* (múltiplos estabelecimentos na mesma plataforma). A solução foi desenhada para resolver o problema de descentralização dos pedidos, permitindo que clientes explorem catálogos dinâmicos e que gestores atualizem seus dados com persistência imediata. O desenvolvimento apoiou-se em práticas modernas de Engenharia de Software, utilizando conteinerização (Docker) e arquitetura de microsserviços simulados.
+O presente documento detalha a engenharia e o desenvolvimento do projeto **iFrango Premium**, um módulo de software voltado para o setor de *food service* e *delivery*. O projeto foi concebido como um Produto Mínimo Viável (MVP) para validar as regras de negócio essenciais de compra, venda e gestão de cardápio em um ambiente *multi-tenant* (múltiplos estabelecimentos na mesma plataforma).
 
 ### 2. OBJETIVOS
 **2.1 Objetivo Geral:** Desenvolver e homologar um módulo de software web integrado a um banco de dados relacional (PostgreSQL) para gerir o fluxo completo de vendas (checkout) e a administração de cardápios por parte dos fornecedores.
@@ -26,33 +27,30 @@ O presente documento detalha a engenharia e o desenvolvimento do projeto **iFran
 * Garantir a portabilidade da aplicação através do encapsulamento em contêineres Docker.
 
 ### 3. METODOLOGIA E ENGENHARIA DE SOFTWARE
-O projeto adotou princípios das metodologias ágeis (Extreme Programming e Scrum), adaptados para ciclos curtos. Houve foco no **Desenvolvimento Iterativo** e no **Refactoring Contínuo**, culminando na eliminação de *code-smells* (como a transição de um sistema *single-tenant* vulnerável para um *multi-tenant* real e seguro via métodos HTTP POST na API).
+O projeto adotou princípios das metodologias ágeis (Extreme Programming e Scrum). Houve foco no **Desenvolvimento Iterativo** e no **Refactoring Contínuo**, culminando na eliminação de *code-smells* e na transição para uma arquitetura segura e robusta.
 
 ### 4. ENGENHARIA DE REQUISITOS
 
 **Requisitos Funcionais (RF):**
-* **RF01:** O sistema deve permitir o cadastro e o login de Clientes e Gestores.
+* **RF01:** Cadastro e login de Clientes e Gestores.
 * **RF02:** Autenticação Multi-tenant protegida por Chave Admin.
-* **RF03:** Exibição do catálogo de forma segmentada por restaurante.
-* **RF04:** Carrinho de Compras dinâmico com cálculo automático.
+* **RF03:** Catálogo segmentado por restaurante.
+* **RF04:** Carrinho de Compras dinâmico.
 * **RF05:** Persistência de Checkout vinculando IDs de Cliente e Restaurante.
-* **RF06:** Adição de novos pratos e atualização de preços pelo Gestor.
-* **RF07:** Atualização do status da Fila da Cozinha em tempo real.
+* **RF06:** Adição de pratos e atualização de preços pelo Gestor.
+* **RF07:** Atualização de status da Fila da Cozinha.
 
 **Requisitos Não Funcionais (RNF):**
 * **RNF01:** API em Python utilizando FastAPI.
 * **RNF02:** Persistência relacional em PostgreSQL com ORM (SQLAlchemy).
 * **RNF03:** Portabilidade via Docker Compose.
-* **RNF04:** Interface SPA com Vanilla JS, Tailwind CSS e sistema Toast assíncrono.
-* **RNF05:** Persistência de sessão no *front-end* via LocalStorage.
+* **RNF04:** Interface SPA com Vanilla JS e Tailwind CSS.
 
 ---
 
 ## 📊 Arquitetura e Diagramas (UML e DFD)
 
 ### Diagrama de Contexto (DFD Nível 0)
-Mapeamento da fronteira de dados do sistema central.
-
 ```mermaid
 flowchart LR
     Cliente[/Cliente / Consumidor/]
@@ -68,12 +66,12 @@ flowchart LR
     style Sistema fill:#F7931E,stroke:#d37206,stroke-width:3px,color:#fff
     style Cliente fill:#fefaf6,stroke:#605e5c
     style Gestor fill:#fefaf6,stroke:#605e5c
-    
-    Modelo Entidade-Relacionamento (MER)
 
-Demonstrativo da integridade referencial implementada no PostgreSQL.
-Snippet de código
+```
 
+### Modelo Entidade-Relacionamento (MER)
+
+```mermaid
 erDiagram
     USUARIOS ||--o{ PEDIDOS : "realiza"
     RESTAURANTES ||--o{ PEDIDOS : "recebe"
@@ -88,35 +86,32 @@ erDiagram
         string status
     }
 
-💻 Como Rodar o Protótipo Localmente
+```
 
-Este projeto está 100% conteinerizado. Certifique-se de ter o Docker e o Docker Compose instalados.
+---
 
-    Clone o repositório e acesse a pasta raiz:
+## 💻 Como Rodar o Protótipo Localmente
 
-Bash
+Certifique-se de ter o Docker e o Docker Compose instalados.
 
+1. Clone o repositório:
+
+```bash
 git clone [https://github.com/SEU_USUARIO/ifrangrofr.git](https://github.com/SEU_USUARIO/ifrangrofr.git)
 cd ifrangrofr
 
-    Suba a infraestrutura (API Python + Banco PostgreSQL):
+```
 
-Bash
+2. Suba a infraestrutura:
 
+```bash
 docker-compose up --build -d
 
-    Acesse a aplicação no seu navegador:
+```
 
-    Protótipo / API: http://localhost:8000
+3. Acesse: `http://localhost:8000`
 
-    Para parar o servidor: docker-compose down
+* **Parar servidor:** `docker-compose down`
+* **Limpar banco (Hard Reset):** `docker-compose down -v`
 
-    Para limpar o banco (Hard Reset): docker-compose down -v
-
-
-### O Último Check-list para o Repositório:
-1. Garanta que os arquivos `main.py`, `schemas.py`, `database.py` e `index.html` estão na pasta `backend/app/`.
-2. O arquivo `Apresentacao_iFrango.html` pode ficar na raiz do projeto (junto com o `docker-compose.yml` e o `README.md`).
-3. Suba tudo (Commit e Push) para o GitHub. Como o GitHub suporta a linguagem `mermaid` nativamente, os diagramas de código que coloquei no texto acima vão se transformar em imagens reais automaticamente na página do seu repositório!
-
-O pacote completo está nas suas mãos. Um sistema blindado, documentação alinhada à ABNT, arquitetura visível no README e uma apresentação fora da caixa. Desejo uma excelente defesa de projeto!
+```
