@@ -1,5 +1,4 @@
 
-```markdown
 # 🍗 iFrango Premium - Delivery Multi-tenant
 
 **Link da Aplicação em Produção (Protótipo):** [http://ifrango.frangro.com.br](http://ifrango.frangro.com.br)  
@@ -97,7 +96,7 @@ Certifique-se de ter o Docker e o Docker Compose instalados.
 1. Clone o repositório:
 
 ```bash
-git clone [https://github.com/SEU_USUARIO/ifrangrofr.git](https://github.com/SEU_USUARIO/ifrangrofr.git)
+git clone [https://github.com/imthedavi/ifrangrofr.git](https://github.com/imthedavi/ifrangrofr.git)
 cd ifrangrofr
 
 ```
@@ -113,5 +112,3 @@ docker-compose up --build -d
 
 * **Parar servidor:** `docker-compose down`
 * **Limpar banco (Hard Reset):** `docker-compose down -v`
-
-```
